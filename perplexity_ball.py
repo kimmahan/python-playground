@@ -46,15 +46,31 @@ def check_collision(ball_pos, square_corners):
         x1, y1 = square_corners[i]
         x2, y2 = square_corners[(i + 1) % 4]
         
-        normal = (y2 - y1, x1 - x2)
+        edge_vector = (x2 - x1, y2 - y1)
+        normal = (-edge_vector[1], edge_vector[0])
         length = math.sqrt(normal[0]**2 + normal[1]**2)
         normal = (normal[0] / length, normal[1] / length)
         
-        distance = abs((x - x1) * normal[0] + (y - y1) * normal[1])
+        distance = (x - x1) * normal[0] + (y - y1) * normal[1]
         
-        if distance <= ball_radius:
+        if abs(distance) <= ball_radius:
             return True, normal
     return False, None
+
+def keep_ball_inside(ball_pos, square_corners):
+    x, y = ball_pos
+    center_x = sum(corner[0] for corner in square_corners) / 4
+    center_y = sum(corner[1] for corner in square_corners) / 4
+    
+    vector_to_center = (center_x - x, center_y - y)
+    distance = math.sqrt(vector_to_center[0]**2 + vector_to_center[1]**2)
+    
+    if distance > square_size / 2 - ball_radius:
+        normalized_vector = (vector_to_center[0] / distance, vector_to_center[1] / distance)
+        new_x = center_x - normalized_vector[0] * (square_size / 2 - ball_radius)
+        new_y = center_y - normalized_vector[1] * (square_size / 2 - ball_radius)
+        return new_x, new_y
+    return x, y
 
 # Main game loop
 while True:
@@ -94,6 +110,9 @@ while True:
         dot_product = ball_speed_x * normal[0] + ball_speed_y * normal[1]
         ball_speed_x = ball_speed_x - 2 * dot_product * normal[0]
         ball_speed_y = ball_speed_y - 2 * dot_product * normal[1]
+
+    # Ensure ball stays inside the square
+    ball_x, ball_y = keep_ball_inside((ball_x, ball_y), square_corners)
 
     # Draw ball
     pygame.draw.circle(screen, YELLOW, (int(ball_x), int(ball_y)), ball_radius)
