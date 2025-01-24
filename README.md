@@ -1,0 +1,1 @@
+This project was created in response to testing how Claude AI handles collision detection and Pygame. The challenge was to create a bouncing yellow ball within a rotating square, with proper physics and collision handling. 
