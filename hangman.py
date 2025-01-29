@@ -1,19 +1,61 @@
 import random
+import json
+from datetime import datetime
+import os
 
 class Hangman:
     def __init__(self):
         self.words = ['python', 'programming', 'computer', 'algorithm', 'database', 'network', 'software']
+        self.high_scores_file = 'hangman_scores.json'
+        self.high_scores = self.load_high_scores()
         self.reset_game()
         self.total_score = 0
         self.games_played = 0
         self.games_won = 0
+
+    def load_high_scores(self):
+        if os.path.exists(self.high_scores_file):
+            try:
+                with open(self.high_scores_file, 'r') as f:
+                    return json.load(f)
+            except json.JSONDecodeError:
+                print("Error reading high scores file. Starting with empty leaderboard.")
+                return []
+        return []
+
+    def save_high_score(self):
+        score_entry = {
+            'name': self.player_name,
+            'score': self.total_score,
+            'games_won': self.games_won,
+            'games_played': self.games_played,
+            'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        self.high_scores.append(score_entry)
+        # Sort by score in descending order and keep top 10
+        self.high_scores = sorted(self.high_scores, key=lambda x: x['score'], reverse=True)[:10]
+        
+        try:
+            with open(self.high_scores_file, 'w') as f:
+                json.dump(self.high_scores, f, indent=2)
+        except Exception as e:
+            print(f"Error saving high scores: {e}")
+
+    def display_high_scores(self):
+        print("\n=== HIGH SCORES ===")
+        print("Rank  Name             Score    Won/Played  Date")
+        print("------------------------------------------------")
+        for i, score in enumerate(self.high_scores, 1):
+            print(f"{i:2d}.   {score['name']:<15} {score['score']:>6d}    {score['games_won']}/{score['games_played']}    {score['date']}")
+        print("------------------------------------------------\n")
 
     def reset_game(self):
         self.word = random.choice(self.words)
         self.guessed_letters = set()
         self.max_tries = 6
         self.tries = 0
-        self.current_word_score = 100  # Start with 100 points for each word
+        self.current_word_score = 100
 
     def display_word(self):
         return ' '.join(letter if letter in self.guessed_letters else '_' for letter in self.word)
@@ -93,7 +135,8 @@ class Hangman:
         return stages[self.max_tries - self.tries]
 
     def display_score(self):
-        print("\n=== Score Board ===")
+        print("\n=== Current Score ===")
+        print(f"Player: {self.player_name}")
         print(f"Current Word Score: {self.current_word_score}")
         print(f"Total Score: {self.total_score}")
         print(f"Games Won: {self.games_won}")
@@ -101,7 +144,7 @@ class Hangman:
         if self.games_played > 0:
             win_rate = (self.games_won / self.games_played) * 100
             print(f"Win Rate: {win_rate:.1f}%")
-        print("================\n")
+        print("==================\n")
 
     def play_round(self):
         print("\nNew word started!")
@@ -124,10 +167,9 @@ class Hangman:
 
             if guess not in self.word:
                 self.tries += 1
-                self.current_word_score -= 10  # Deduct 10 points for wrong guess
+                self.current_word_score -= 10
                 print(f"Wrong guess! You have {self.max_tries - self.tries} tries left.")
             else:
-                # Award points based on letter frequency
                 frequency = self.word.count(guess)
                 points = 10 * frequency
                 self.current_word_score += points
@@ -149,6 +191,8 @@ class Hangman:
 
     def play(self):
         print("Welcome to Hangman!")
+        self.player_name = input("Enter your name (max 15 characters): ")[:15]
+        self.display_high_scores()
         
         while True:
             self.games_played += 1
@@ -162,6 +206,9 @@ class Hangman:
             if play_again != 'yes':
                 print("\nFinal Stats:")
                 self.display_score()
+                self.save_high_score()
+                print("\nFinal Leaderboard:")
+                self.display_high_scores()
                 print("Thanks for playing!")
                 break
                 
