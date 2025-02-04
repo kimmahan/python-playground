@@ -11,7 +11,7 @@ def display_welcome():
     - Paper covers Rock
     - Scissors cuts Paper
     - Lightning beats Rock and Scissors
-    - Paper insulates against Lightning
+    - Paper insulates against Lightning Rods
     """)
 
 def get_player_choice():
