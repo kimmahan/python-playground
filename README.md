@@ -4,10 +4,11 @@ This repository contains various Python projects and games, created to explore d
 
 ## Projects
 
-### Bouncing Ball Physics
+### Bouncing Ballss
 - A simulation created to test collision detection and Pygame capabilities
 - Features a bouncing yellow ball within a rotating square
 - Implements proper physics and collision handling
+- Often used to detect coding skills in new models
 
 ### Hangman Game
 - Classic text-based Hangman implementation
