@@ -1,20 +1,18 @@
-from flask import Flask, render_template, request, jsonify
-import importlib
-import sys
+from flask import Flask, render_template, send_from_directory
 
 app = Flask(__name__)
 
-# Dictionary mapping game names to their Python modules
+# Dictionary mapping game names to their PygBag-generated HTML files in dist/
 games = {
-    "bouncing_balls": "bouncing_ball",
-    "hangman": "hangman",
-    "pacman": "pacman",
-    "rock_paper_scissors": "rock_paper",
-    "tetris": "tetris",
-    "chatgpt-celestial": "chatgpt_celestial",
-    "claude-celestial": "claude_celestial",
-    "gemini-celestial": "gemini_celestial",
-    "particle": "particle"
+    "bouncing_balls": "bouncing_balls/index.html",
+    "hangman": "hangman/index.html",
+    "pacman": "pacman/index.html",
+    "rock_paper_scissors": "rock_paper_scissors/index.html",
+    "tetris": "tetris/index.html",
+    "chatgpt-celestial": "chatgpt-celestial/index.html",
+    "claude-celestial": "claude-celestial/index.html",
+    "gemini-celestial": "gemini-celestial/index.html",
+    "particle": "particle/index.html"
 }
 
 @app.route('/')
@@ -25,14 +23,10 @@ def home():
 def play_game(game_name):
     if game_name in games:
         try:
-            # Dynamically import and run the game module
-            module_name = games[game_name]
-            module = importlib.import_module(f"{module_name}")
-            # Here, you'd need to adapt the game to run in a web context
-            # For simplicity, we'll return a message (you'll need to implement game logic)
-            return f"Playing {game_name}! (Add your game logic here)"
+            # Serve the PygBag-generated HTML file for the game
+            return send_from_directory('dist', games[game_name])
         except Exception as e:
-            return f"Error running {game_name}: {str(e)}", 500
+            return f"Error loading {game_name}: {str(e)}", 500
     return "Game not found!", 404
 
 if __name__ == '__main__':
