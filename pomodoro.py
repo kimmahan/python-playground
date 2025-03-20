@@ -97,23 +97,34 @@ def countdown(duration, label, color, update_interval=1):
         while remaining > 0:
             clear_screen()
             
-            # Calculate progress bar (50 characters wide)
-            progress_width = 50
+            # Box width (keep it consistent throughout all elements)
+            box_width = 60
+            content_width = box_width - 4  # Account for "║ " at start and " ║" at end
+            
+            # Calculate progress bar width (use less width than the box)
+            progress_width = content_width - 14  # Remove "Progress: " text width
             filled_width = int(progress_width * (duration - remaining) / duration)
+            # Make sure we don't exceed the progress bar width
+            filled_width = min(filled_width, progress_width)
             bar = "█" * filled_width + "░" * (progress_width - filled_width)
             
             # Calculate estimated end time
             end_time_str = end_time.strftime("%H:%M:%S")
             
-            # Print timer information
-            print(f"\n{color}╔{'═' * 60}╗{Colors.RESET}")
-            print(f"{color}║{' ' * 24}POMODORO TIMER{' ' * 23}║{Colors.RESET}")
-            print(f"{color}╠{'═' * 60}╣{Colors.RESET}")
-            print(f"{color}║ Current Session: {label:<42} ║{Colors.RESET}")
-            print(f"{color}║ Time Remaining: {format_time(remaining):<42} ║{Colors.RESET}")
-            print(f"{color}║ End Time:       {end_time_str:<42} ║{Colors.RESET}")
-            print(f"{color}║ Progress:       {bar} ║{Colors.RESET}")
-            print(f"{color}╚{'═' * 60}╝{Colors.RESET}")
+            # Center the title
+            title = "POMODORO TIMER"
+            title_padding = (box_width - len(title) - 2) // 2
+            title_line = f"║{' ' * title_padding}{title}{' ' * (box_width - 2 - title_padding - len(title))}║"
+            
+            # Print timer information with consistent widths
+            print(f"\n{color}╔{'═' * (box_width - 2)}╗{Colors.RESET}")
+            print(f"{color}{title_line}{Colors.RESET}")
+            print(f"{color}╠{'═' * (box_width - 2)}╣{Colors.RESET}")
+            print(f"{color}║ Current Session: {label:<{content_width - 18}} ║{Colors.RESET}")
+            print(f"{color}║ Time Remaining: {format_time(remaining):<{content_width - 18}} ║{Colors.RESET}")
+            print(f"{color}║ End Time:       {end_time_str:<{content_width - 18}} ║{Colors.RESET}")
+            print(f"{color}║ Progress:       {bar:<{progress_width}} ║{Colors.RESET}")
+            print(f"{color}╚{'═' * (box_width - 2)}╝{Colors.RESET}")
             print("\nPress Ctrl+C to pause/quit")
             
             time.sleep(update_interval)
