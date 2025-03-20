@@ -4,7 +4,18 @@ This repository contains various Python projects and games, created to explore d
 
 ## Projects
 
-### Bouncing Ballss
+### Pomodoro.py
+- A simple command line based pomodoro timer by Claude
+- To run: python pomodoro.py --work 25 --short 5 --long 15 --sessions 4 --auto
+Where:
+
+--work: Work session duration in minutes (default: 25)
+--short: Short break duration in minutes (default: 5)
+--long: Long break duration in minutes (default: 15)
+--sessions: Number of work sessions before a long break (default: 4)
+--auto: Auto-start each session without prompting
+
+### Bouncing Balls
 - A simulation created to test collision detection and Pygame capabilities
 - Features a bouncing yellow ball within a rotating square
 - Implements proper physics and collision handling
