@@ -12,11 +12,25 @@ import os
 from datetime import datetime, timedelta
 
 # Try to import notification libraries, but continue if they're not available
+NOTIFY_AVAILABLE = False
+WINDOWS_NOTIFY = False
+
 try:
     import plyer.notification
     NOTIFY_AVAILABLE = True
 except ImportError:
     NOTIFY_AVAILABLE = False
+
+# Add Windows-specific notification as backup
+if not NOTIFY_AVAILABLE and os.name == 'nt':
+    try:
+        # Check if we can use Windows notifications
+        from win10toast import ToastNotifier
+        toaster = ToastNotifier()
+        WINDOWS_NOTIFY = True
+    except ImportError:
+        # Still allow fallback to command line if the package isn't available
+        WINDOWS_NOTIFY = False
 
 # Define colors for terminal output
 class Colors:
@@ -38,6 +52,9 @@ def format_time(seconds):
 
 def show_notification(title, message):
     """Show a desktop notification."""
+    notification_shown = False
+    
+    # Try using plyer first
     if NOTIFY_AVAILABLE:
         try:
             plyer.notification.notify(
@@ -46,9 +63,25 @@ def show_notification(title, message):
                 app_name="Pomodoro Timer",
                 timeout=10
             )
+            notification_shown = True
         except Exception as e:
-            print(f"Notification error: {e}")
-    else:
+            print(f"Plyer notification error: {e}")
+    
+    # Try Windows-specific notification as backup
+    if not notification_shown and WINDOWS_NOTIFY:
+        try:
+            toaster.show_toast(
+                title,
+                message,
+                duration=5,
+                threaded=True
+            )
+            notification_shown = True
+        except Exception as e:
+            print(f"Windows notification error: {e}")
+    
+    # If all else fails, use terminal notification
+    if not notification_shown:
         # Print a more visible notification if desktop notifications aren't available
         print(f"\n{'='*50}")
         print(f"{Colors.YELLOW}{title}: {message}{Colors.RESET}")
@@ -167,9 +200,11 @@ Settings:
 - Auto-start: {'Yes' if args.auto else 'No'}
 """)
         
-        if not NOTIFY_AVAILABLE:
+        if not NOTIFY_AVAILABLE and not WINDOWS_NOTIFY:
             print(f"{Colors.YELLOW}Warning: Desktop notifications not available.{Colors.RESET}")
-            print("To enable notifications, install the plyer package with: pip install plyer\n")
+            print("To enable notifications, install one of these packages:")
+            print("- pip install plyer")
+            print("- pip install win10toast (Windows only)\n")
         
         input("Press Enter to start Pomodoro Timer...")
         run_pomodoro(args.work, args.short, args.long, args.sessions, args.auto)
